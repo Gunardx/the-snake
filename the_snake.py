@@ -28,7 +28,7 @@ APPLE_COLOR = (255, 0, 0)
 SNAKE_COLOR = (0, 255, 0)
 
 # Скорость движения змейки:
-SPEED = 20
+SPEED = 10
 
 # Настройка игрового окна:
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
@@ -108,61 +108,21 @@ class Snake(GameObject):
 
     def get_head_position(self) -> tuple:
         """Метод возвращает координаты головы."""
-        head_position = self.positions[0]
-        return head_position
+        return self.positions[0]
 
-    def move(self) -> None:
+    def insert_head(self, next_head_position) -> None:
         """
-        Метод движения змейки. Если направление RIGHT,
-        то новое значение кортежа next_head_position вычисляется на основе
-        текущей позиции головы и размера клетки.
-        И уже этот новый кортеж вставляется в начало списка позиций.
-        Затем переменной self.last присваивается последний элемент списка
-        self.positions и запускается проверка соответствия длины позиций
-        к длине атрибута self.length. Дальнейшие ветки условия повторяют
-        ту же логику для направлений LEFT, UP и DOWN.
+        Метод вставляет новую позицию головы змейки в
+        начало списка self.positions, затем сохраняет координаты
+        хвоста и проводит проверку длинны
         """
-        current_head_position = self.get_head_position()
-        if self.direction == RIGHT:
-            next_head_position = (
-                (current_head_position[0] + GRID_SIZE),
-                current_head_position[1]
-            )
-            self.positions.insert(0, next_head_position)
-            self.last = self.positions[-1]
-            if len(self.positions) > self.length:
-                self.positions.pop()
+        self.positions.insert(0, next_head_position)
+        self.last = self.positions[-1]
+        if len(self.positions) > self.length:
+            self.positions.pop()
 
-        elif self.direction == LEFT:
-            next_head_position = (
-                (current_head_position[0] - GRID_SIZE),
-                current_head_position[1]
-            )
-            self.positions.insert(0, next_head_position)
-            self.last = self.positions[-1]
-            if len(self.positions) > self.length:
-                self.positions.pop()
-
-        elif self.direction == UP:
-            next_head_position = (
-                current_head_position[0],
-                (current_head_position[1] - GRID_SIZE)
-            )
-            self.positions.insert(0, next_head_position)
-            self.last = self.positions[-1]
-            if len(self.positions) > self.length:
-                self.positions.pop()
-
-        elif self.direction == DOWN:
-            next_head_position = (
-                current_head_position[0],
-                (current_head_position[1] + GRID_SIZE)
-            )
-            self.positions.insert(0, next_head_position)
-            self.last = self.positions[-1]
-            if len(self.positions) > self.length:
-                self.positions.pop()
-
+    def check_borders(self):
+        """Метод проверяет выход змейки за пределы границ поля"""
         # Выход за правую и левую границы
         if self.positions[0][0] > (SCREEN_WIDTH - GRID_SIZE):
             self.positions[0] = (0, self.positions[0][1])
@@ -175,6 +135,48 @@ class Snake(GameObject):
         if self.positions[0][1] < 0:
             self.positions[0] = (self.positions[0][0],
                                  SCREEN_HEIGHT - GRID_SIZE)
+
+    def move(self) -> None:
+        """
+        Метод движения змейки. Если направление RIGHT,
+        то новое значение кортежа next_head_position вычисляется на основе
+        текущей позиции головы и размера клетки.
+        Затем вызывается метод формирования новой головы
+        self.insert_head.
+        Дальнейшие ветки условия повторяют
+        ту же логику для направлений LEFT, UP и DOWN.
+        В конце метод проверки выхода змейки за пределы поля.
+        """
+        current_head_position = self.get_head_position()
+        if self.direction == RIGHT:
+            next_head_position = (
+                (current_head_position[0] + GRID_SIZE),
+                current_head_position[1]
+            )
+            self.insert_head(next_head_position)
+
+        elif self.direction == LEFT:
+            next_head_position = (
+                (current_head_position[0] - GRID_SIZE),
+                current_head_position[1]
+            )
+            self.insert_head(next_head_position)
+
+        elif self.direction == UP:
+            next_head_position = (
+                current_head_position[0],
+                (current_head_position[1] - GRID_SIZE)
+            )
+            self.insert_head(next_head_position)
+
+        elif self.direction == DOWN:
+            next_head_position = (
+                current_head_position[0],
+                (current_head_position[1] + GRID_SIZE)
+            )
+            self.insert_head(next_head_position)
+
+        self.check_borders()
 
     def update_direction(self) -> None:
         """Метод обновления направления после нажатия на кнопку."""
@@ -237,8 +239,6 @@ def main() -> None:
     # Основная логика
     running = True
     while running:
-        clock.tick(SPEED)
-
         # Обработка действий
         handle_keys(snake)
         # Обновление направления движения змейки
