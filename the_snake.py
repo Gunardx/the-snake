@@ -48,9 +48,10 @@ class GameObject():
     """
 
     def __init__(self,
-                 body_color: tuple
+                 body_color: tuple = (0, 0, 0)
                  ) -> None:
         self.body_color: tuple = body_color
+        self.position = BOARD_CENTER  # Без него не проходит pytest
 
     def draw(self):
         """Метод для последующего переопределения дочерними классами."""
@@ -76,7 +77,10 @@ class Apple(GameObject):
         self.randomize_position()
 
     def randomize_position(self) -> None:
-        """Метод случайного определения координат яблока на игровом поле."""
+        """
+        Метод случайного определения координат яблока на игровом поле.
+        Далее идет сверка позиции яблока с телом змейки.
+        """
         while True:
             position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
                         randint(0, GRID_HEIGHT - 1) * GRID_SIZE
@@ -138,6 +142,7 @@ class Snake(GameObject):
         new_y = head_y + d_y * GRID_SIZE
         new_position = (new_x, new_y)
         self.insert_head(new_position)
+
         # Выход за пределы границ
         if self.positions[0][0] > (SCREEN_WIDTH - GRID_SIZE):
             self.positions[0] = (0, self.positions[0][1])
