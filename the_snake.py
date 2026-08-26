@@ -123,17 +123,13 @@ class Snake(GameObject):
         if len(self.positions) > self.length:
             self.positions.pop()
 
-
     def move(self) -> None:
         """
-        Метод движения змейки.
-
-        Текущая позиция головы и направление
+        Метод движения змейки. Текущая позиция головы и направление
         распаковываются. Новая координата x вычисляется путем
         умножения направления на размер клетки и прибавления к
         текущей позиции головы.
-        Затем вызывается метод формирования новой головы
-        self.insert_head.
+        Затем вызывается метод формирования новой головы self.insert_head.
         Далее проверки выхода змейки за пределы поля.
         """
         head_x, head_y = self.get_head_position()
@@ -142,13 +138,12 @@ class Snake(GameObject):
         new_y = head_y + d_y * GRID_SIZE
         new_position = (new_x, new_y)
         self.insert_head(new_position)
-        # Выход за правую и левую границы
+        # Выход за пределы границ
         if self.positions[0][0] > (SCREEN_WIDTH - GRID_SIZE):
             self.positions[0] = (0, self.positions[0][1])
         if self.positions[0][0] < 0:
             self.positions[0] = (SCREEN_WIDTH - GRID_SIZE,
                                  self.positions[0][1])
-        # Выход за верхнюю и нижнюю границы
         if self.positions[0][1] > (SCREEN_HEIGHT - GRID_SIZE):
             self.positions[0] = (self.positions[0][0], 0)
         if self.positions[0][1] < 0:
@@ -171,11 +166,10 @@ class Snake(GameObject):
 
     def draw(self) -> None:
         """Отрисовка модели змейки."""
-        # Затирание последнего сегмента
         if self.last:
             last_rect = pg.Rect(self.last, (GRID_SIZE, GRID_SIZE))
             pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
-
+            
         # Отрисовка головы
         head_rect = pg.Rect(self.positions[0], (GRID_SIZE, GRID_SIZE))
         pg.draw.rect(screen, self.body_color, head_rect)
