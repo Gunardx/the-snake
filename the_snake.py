@@ -169,7 +169,7 @@ class Snake(GameObject):
         if self.last:
             last_rect = pg.Rect(self.last, (GRID_SIZE, GRID_SIZE))
             pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
-            
+
         # Отрисовка головы
         head_rect = pg.Rect(self.positions[0], (GRID_SIZE, GRID_SIZE))
         pg.draw.rect(screen, self.body_color, head_rect)
