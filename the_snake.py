@@ -51,7 +51,8 @@ class GameObject():
                  body_color: tuple = (0, 0, 0)
                  ) -> None:
         self.body_color: tuple = body_color
-        self.position = BOARD_CENTER  # Без него не проходит проверка автотестами (pytest)
+        # Без него не проходит проверка автотестами (pytest)
+        self.position = BOARD_CENTER
 
     def draw(self):
         """Метод для последующего переопределения дочерними классами."""
