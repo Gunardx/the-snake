@@ -24,6 +24,9 @@ BORDER_COLOR = (93, 216, 228)
 # Цвет яблока
 APPLE_COLOR = (255, 0, 0)
 
+# Цвет камня
+ROCK_COLOR = (120, 120, 120)
+
 # Цвет змейки
 SNAKE_COLOR = (0, 255, 0)
 
@@ -92,6 +95,53 @@ class Apple(GameObject):
 
     def draw(self) -> None:
         """Отрисовка модели яблока."""
+        rect = pg.Rect(self.position, (GRID_SIZE, GRID_SIZE))
+        pg.draw.rect(screen, self.body_color, rect)
+        pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+
+
+class Rock(GameObject):
+    """
+    Камень.
+
+    Расположение определяется случайно
+    с помощью метода randomize_position. Отличается от яблока
+    тем что при столкновении со змейкой - игра сбрасывается.
+    """
+
+    def __init__(self,
+                 body_color: tuple = ROCK_COLOR,
+                 occupied_positions: list | None = None
+                 ) -> None:
+        super().__init__(body_color)
+        self.body_color: tuple = body_color
+        self.occupied_positions = occupied_positions or []
+        self.last_move_time = pg.time.get_ticks()
+        self.randomize_position()
+
+    def randomize_position(self) -> None:
+        """Метод случайного определения координат камня на игровом поле."""
+        # Проверка позиции камня каждые 5 сек, если текущее время минус
+        # время последнего перемещения меньше 5 секунд - выход из метода,
+        # если больше - сработает последняя строка в методе
+        now = pg.time.get_ticks()
+        if now - self.last_move_time < 5000:
+            return
+        # Затирание последней позиции камня
+        rock_rect = pg.Rect(self.position, (GRID_SIZE, GRID_SIZE))
+        pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, rock_rect)
+        # Обновление позиции камня
+        while True:
+            position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                        randint(0, GRID_HEIGHT - 1) * GRID_SIZE
+                        )
+            if position not in self.occupied_positions:
+                self.position = position
+                break
+        self.last_move_time = now
+
+    def draw(self) -> None:
+        """Отрисовка модели камня."""
         rect = pg.Rect(self.position, (GRID_SIZE, GRID_SIZE))
         pg.draw.rect(screen, self.body_color, rect)
         pg.draw.rect(screen, BORDER_COLOR, rect, 1)
@@ -207,6 +257,7 @@ def main() -> None:
     # Создание экземпляров классов
     snake = Snake(SNAKE_COLOR)
     apple = Apple(APPLE_COLOR, snake.positions)
+    rock = Rock(ROCK_COLOR, snake.positions)
 
     # Основная логика
     running = True
@@ -217,19 +268,28 @@ def main() -> None:
         snake.update_direction()
         # Движение змейки, модификация списка координат
         snake.move()
-        # Поддержка актуальных позиций змейки для яблока
+        # Поддержка актуальных позиций змейки для яблока и камня
         apple.occupied_positions = snake.positions.copy()
+        rock.occupied_positions = snake.positions.copy()
         # Проверка поедания яблока змейкой
         if snake.get_head_position() == apple.position:
             snake.length += 1
             apple.randomize_position()
-        # Проверка столкновения головы змейки со своим телом
-        elif snake.get_head_position() in snake.positions[4:]:
+        # Проверка столкновения змейки с камнем
+        if snake.get_head_position() == rock.position:
             snake.reset()
             screen.fill(BOARD_BACKGROUND_COLOR)
+            rock.randomize_position()
+        # Проверка столкновения головы змейки со своим телом
+        if snake.get_head_position() in snake.positions[4:]:
+            snake.reset()
+            screen.fill(BOARD_BACKGROUND_COLOR)
+        # Обновление позиции камня
+        rock.randomize_position()
         # Отрисовка
         snake.draw()
         apple.draw()
+        rock.draw()
         # Обновление экрана
         pg.display.update()
         # Ограничение частоты кадров
